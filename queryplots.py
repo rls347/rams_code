@@ -58,9 +58,11 @@ def precipmovie(files,name):
         if np.max(rain)>np.min(rain):
             pcp.append(rain)
             pcpvar.append(np.mean(rain))
+
     pcp = np.array(pcp)
 
-    if len(pcp)>0:
+    if np.max(pcp)>0.1:
+        pcp = np.array(pcp)
         time = np.arange(len(pcpvar))
         plt.clf()
         plt.plot(time,pcpvar)
@@ -69,7 +71,7 @@ def precipmovie(files,name):
         plt.close()
 
         fig = plt.figure()
-        levels=np.linspace(0.1,np.max(rain),20)
+        levels=np.linspace(0.1,np.max(rain),48)
         fargs = [pcp,xs,ys,levels,"Precip Rate (mm/hr)"]
         anim = animation.FuncAnimation(fig, animateoverhead, frames=pcp.shape[0],fargs=fargs)
         makemovie(anim,name+'preciprate') 
@@ -152,7 +154,42 @@ def pwmovie(files,name):
     var3d = []
     pwvar = []
     for a, fil in enumerate(files):
+        print(fil)
         var = intvapor(fil)
+        if var.max()>var.min():
+#            plt.contourf(xs,ys,var)
+#            cbar = plt.colorbar(label = 'Precipitable Water')
+#            title='Time ' + str(a)
+#            plt.title(title)
+            pwvar.append(np.mean(var))
+#            var3d.append(var)
+#    var3d = np.asarray(var3d)
+
+    if len(pwvar)>0:
+        time = np.arange(len(pwvar))
+        plt.clf()
+        plt.plot(time,pwvar)
+        plt.title('Domain Mean Precipitable Water')
+        plt.savefig(name+'PWtimeseries.png')
+        plt.close()
+
+#        levels = np.linspace(np.min(var3d),np.max(var3d),20)
+#        fig = plt.figure()
+#        fargs = [var3d,xs,ys,levels,'Precipitable Water']
+#        anim = animation.FuncAnimation(fig, animateoverhead, frames=var3d.shape[0],fargs=fargs)
+#        makemovie(anim,name+'PW')
+    else:
+        print(name, ' has no variation in ',var)
+
+    return
+
+def movie2d(files,name,varname,title):
+    xs,ys,height = get_dims(files[0])
+    var3d = []
+    pwvar = []
+    for a, fil in enumerate(files):
+        print(fil)
+        var = getvar(fil,varname)
         if var.max()>var.min():
             pwvar.append(np.mean(var))
             var3d.append(var)
@@ -162,19 +199,16 @@ def pwmovie(files,name):
         time = np.arange(len(pwvar))
         plt.clf()
         plt.plot(time,pwvar)
-        plt.title('Domain Mean Precipitable Water')
-        plt.savefig(name+'PWtimeseries.png')
+        plt.title(title) 
+        plt.savefig(name+'.'+varname+'.timeseries.png')
         plt.close()
 
         levels = np.linspace(np.min(var3d),np.max(var3d),20)
         fig = plt.figure()
-        fargs = [var3d,xs,ys,levels,'Precipitable Water']
+        fargs = [var3d,xs,ys,levels,title]
         anim = animation.FuncAnimation(fig, animateoverhead, frames=var3d.shape[0],fargs=fargs)
-        makemovie(anim,name+'PW')
+        makemovie(anim,name+varname)
     else:
         print(name, ' has no variation in ',var)
 
     return
-
-
-

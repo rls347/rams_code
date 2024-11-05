@@ -53,6 +53,16 @@ def intvapor(f):
     pcpw = np.sum(var,0)
     return pcpw
 
+def intcond(f):
+    ''' Returns vertically integrated condensate in kg/m2'''
+    cond = sum_cond(f)
+    rho = getrho(f)
+    headfile = f[:-5]+'head.txt'
+    zm, zt, nx, ny, dxy, npa = read_head(headfile,f)
+    var = cond[1:,:,:]*rho[1:,:,:]*np.diff(zm)[:,None,None]
+    intq = np.sum(var,0)
+    return intq
+
 def getcloudtop(fil):
     ''' returns a 2d variable with the indices of cloud top'''
     q=sum_cond(fil)*1000.
